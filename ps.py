@@ -632,8 +632,13 @@ if album_per_year_kw['album'].nunique() >= 2:
                st.plotly_chart(fig, key = 'fig2')
 
 else:
-      
-      fig = go.Figure()
+
+      fig = go.Figure(
+          layout = go.Layout(
+               width=800,
+               height=800
+          )
+      )
 
       fig.add_trace(
             go.Scatter(
@@ -957,8 +962,13 @@ if album_per_year['album'].nunique() >= 2:
                st.plotly_chart(fig, key = 'fig2')
 
 else:
-      
-      fig = go.Figure()
+
+      fig = go.Figure(
+          layout = go.Layout(
+               width=800,
+               height=800
+          )
+      )
 
       fig.add_trace(
             go.Scatter(
