@@ -1,13 +1,23 @@
 import streamlit as st
 import pandas as pd
-
+import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 st.title("ANALISIS DE MY PLAYLIST")
 
 playlist = pd.read_csv(r'C:\Users\Dussand\Desktop\proyectsDS\Python\Machine Learning\spotify\myplaylist_spotify\data\my_playlist.csv')
+kanye_west = pd.read_csv(r'C:\Users\Dussand\Desktop\proyectsDS\Python\Machine Learning\spotify\myplaylist_spotify\data\Kanye West.csv')
+kendrick_lamar = pd.read_csv(r'C:\Users\Dussand\Desktop\proyectsDS\Python\Machine Learning\spotify\myplaylist_spotify\data\Kendrick Lamar.csv')
 
 playlist = playlist.drop(columns=['Unnamed: 0'])
+kanye_west = kanye_west.drop(columns=['Unnamed: 0'])
+kendrick_lamar = kendrick_lamar.drop(columns=['Unnamed: 0'])
+
+playlist['year'] = playlist['release_date'].str.slice(0,4)
+kanye_west['year'] = kanye_west['release_date'].str.slice(0,4)
+kendrick_lamar['year'] = kendrick_lamar['release_date'].str.slice(0,4)
 
 k1, k2 = st.columns(2)
 
@@ -29,12 +39,12 @@ st.sidebar.title("Elige tu cancion para escuchar")
 
 # Título de la aplicación
 
-album = playlist['album'].unique()
-album_sb = st.sidebar.selectbox('Selecciona uno de los albumes de tu playlist', album)
-song_sb = st.sidebar.selectbox('Selecciona una cancion: ', playlist[playlist['album']== album_sb]['name'].unique())
+artist = playlist['artist'].unique()
+artist_sb = st.sidebar.selectbox('Selecciona uno de los albumes de tu playlist', artist)
+song_sb = st.sidebar.selectbox('Selecciona una cancion: ', playlist[playlist['artist']== artist_sb]['name'].unique())
 
 # Filtrar el DataFrame para obtener la URL de la imagen del álbum seleccionado
-image_url = playlist.loc[playlist['album'] == album_sb, 'album_image_url'].values[0]
+image_url = playlist.loc[playlist['artist'] == artist_sb, 'album_image_url'].values[0]
 
 track_id = playlist.loc[playlist['name'] == song_sb, 'track_id'].values[0]
     
@@ -46,10 +56,11 @@ col1, col2 = st.sidebar.columns(2)
 with col1:
     st.sidebar.markdown(
     f"""
+
     <iframe src="{spotify_embed_url}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
     """,
     unsafe_allow_html=True
-)
+ )
 
 #veremos los albumes con mas presencia en mi playlist
 st.header('TOP 5 ALBUMES CON MAYOR PRESENCIA EN LA PLAYLIST')
@@ -180,7 +191,7 @@ if not oldest_album_filtered.empty:
                
           )
      with a2:
-          st.subheader("Canciones del album en tu playlist: ")
+          st.subheader(f"Canciones de {select_album} en tu playlist: ")
           for i in range(len(name_df)):
                oldest_name = name_df.iloc[i]['name']
                st.write(f'**{oldest_name}**')
@@ -188,3 +199,255 @@ if not oldest_album_filtered.empty:
 else:
      st.write('No hay resultados para este año')
 
+
+
+
+year_song = playlist.groupby('year')['name'].count().reset_index()
+
+fig = px.bar(
+     data_frame=year_song,
+     x = 'year',
+     y = 'name',
+     color = 'name',
+     color_continuous_scale=px.colors.sequential.Reds
+)
+
+st.plotly_chart(fig)
+
+st.header('ARTISTAS CON MAS PRESENCIA EN LA PLAYLIST')
+st.write('Veremos los artistas con mayor presencia en la playlist')
+
+artist_frequemcy = playlist.groupby(['artist', 'artist_image_url'])['name'].count().reset_index(name = 'count').sort_values(by = 'count',ascending=False)
+#artist_frequemcy
+
+aa1, aa2 = st.columns(2)
+
+with aa1:
+
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{artist_frequemcy['artist_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+          st.metric(
+               label= 'Artista',
+               value= artist_frequemcy.iloc[0]['artist']
+               
+          )
+
+          st.metric(
+               label= 'Numero de canciones en la playlist',
+               value= artist_frequemcy.iloc[0]['count']
+               
+          )
+          kanye  = playlist.groupby(['album', 'artist'])['name'].nunique().reset_index().sort_values('name', ascending=False)
+          value_ye = artist_frequemcy['artist'].values[0]
+          fig = px.bar(
+               data_frame=kanye[kanye['artist'] == value_ye],
+               x = 'album',
+               y = 'name',
+               color = 'name',
+               color_continuous_scale=px.colors.sequential.Greys
+          )
+          
+          st.plotly_chart(fig)
+
+with aa2:
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{artist_frequemcy['artist_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+          st.metric(
+               label= 'Artista',
+               value= artist_frequemcy.iloc[1]['artist']
+               
+          )
+
+          st.metric(
+               label= 'Numero de canciones en la playlist',
+               value= artist_frequemcy.iloc[1]['count']
+               
+          )
+
+          kdot  = playlist.groupby(['album', 'artist'])['name'].nunique().reset_index().sort_values('name', ascending=False)
+          value_kdot = artist_frequemcy['artist'].values[1]
+          fig = px.bar(
+               data_frame=kdot[kdot['artist'] == value_kdot],
+               x = 'album',
+               y = 'name',
+               color = 'name',
+               color_continuous_scale=px.colors.sequential.Oranges
+          )
+          
+          st.plotly_chart(fig)
+    
+st.header('ANALIZAREMOS UN POCO MAS A LOS DOS ARTISTAS CON MAYOR PRESENCIA EN LA PLAYLIST')
+
+st.subheader('¿Cuales son los albumes mas populares de Kanye?')
+kanye_west = pd.merge(
+    kanye_west,
+    playlist[['album', 'album_image_url']],
+    on = 'album',
+    how = 'left'
+    
+)
+
+popular_album = kanye_west.groupby(['album', 'album_image_url']).agg({
+      'popularity':'mean',
+      'track_name':'nunique'
+}).reset_index().sort_values('popularity', ascending=False)
+
+
+q1, q2, q3 = st.columns(3)
+
+with q1:
+
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+          st.metric(
+               label= 'Album',
+               value= popular_album.iloc[0]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album.iloc[0]['track_name']
+               
+          ) 
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album.iloc[0]['popularity'], 2)
+               
+          )
+
+
+with q2:
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+
+          st.metric(
+               label= 'Album',
+               value= popular_album.iloc[1]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album.iloc[1]['track_name']
+               
+          )
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album.iloc[1]['popularity'], 2)
+               
+          )
+
+
+with q3:
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+
+          st.metric(
+               label= 'Album',
+               value= popular_album.iloc[2]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album.iloc[2]['track_name']
+               
+          )
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album.iloc[2]['popularity'], 2)
+               
+          )
+
+st.write('')
+
+st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KANYE WEST')
+
+fig = go.Figure()
+
+fig.add_trace(
+      go.Scatter(
+        x=popular_album['album'],  # Repetimos el eje x para que la línea siga el mismo formato
+        y= popular_album['popularity'],  # Línea horizontal en la popularidad 60
+
+        name='Línea de Referencia',  # Nombre que aparecerá en la leyenda
+        line=dict(color='red', dash='dash')  # Estilo de la línea
+    )
+            
+)
+  
+st.plotly_chart(fig)
