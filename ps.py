@@ -15,6 +15,7 @@ playlist = playlist.drop(columns=['Unnamed: 0'])
 kanye_west = kanye_west.drop(columns=['Unnamed: 0'])
 kendrick_lamar = kendrick_lamar.drop(columns=['Unnamed: 0'])
 
+
 playlist['year'] = playlist['release_date'].str.slice(0,4)
 kanye_west['year'] = kanye_west['release_date'].str.slice(0,4)
 kendrick_lamar['year'] = kendrick_lamar['release_date'].str.slice(0,4)
@@ -303,14 +304,59 @@ with aa2:
     
 st.header('ANALIZAREMOS UN POCO MAS A LOS DOS ARTISTAS CON MAYOR PRESENCIA EN LA PLAYLIST')
 
+l1, l2 = st.columns(2)
+
+with l1:
+      st.subheader('Total de canciones')
+      kanye_west_songs = kanye_west['track_name'].nunique()
+      st.write(f'**{kanye_west_songs}**')
+
+with l2:
+      st.subheader('Total de albumes')
+      kanye_west_albumes = kanye_west['album'].nunique()
+      st.write(f'**{kanye_west_albumes}**')
+
+
 st.subheader('¿Cuales son los albumes mas populares de Kanye?')
 kanye_west = pd.merge(
     kanye_west,
     playlist[['album', 'album_image_url']],
     on = 'album',
-    how = 'left'
+    how = 'inner'
     
 )
+
+kanye_west = kanye_west.drop_duplicates()
+
+kanye_west.loc[kanye_west['album'] == 'KIDS SEE GHOSTS', 'album_image_url'] = \
+    kanye_west.loc[kanye_west['album'] == 'KIDS SEE GHOSTS', 'album_image_url'].where(
+        kanye_west['album_image_url'].notna(), 
+        'https://www.thebackpackerz.com/wp-content/uploads/2018/08/FullSizeRender-2.jpg'
+    )
+
+kanye_west.loc[kanye_west['album'] == 'Watch The Throne (Deluxe)', 'album_image_url'] = \
+    kanye_west.loc[kanye_west['album'] == 'Watch The Throne (Deluxe)', 'album_image_url'].where(
+        kanye_west['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b2735c837cc621c1ec82bf3c81ac'
+    )
+
+kanye_west.loc[kanye_west['album'] == '808s & Heartbreak', 'album_image_url'] = \
+    kanye_west.loc[kanye_west['album'] == '808s & Heartbreak', 'album_image_url'].where(
+        kanye_west['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b273346d77e155d854735410ed18'
+    )
+
+kanye_west.loc[kanye_west['album'] == 'Late Orchestration', 'album_image_url'] = \
+    kanye_west.loc[kanye_west['album'] == 'Late Orchestration', 'album_image_url'].where(
+        kanye_west['album_image_url'].notna(), 
+        'https://m.media-amazon.com/images/I/81X+h7CMPgL._AC_UF1000,1000_QL80_.jpg'
+    )
+
+kanye_west.loc[kanye_west['album'] == 'Late Registration', 'album_image_url'] = \
+    kanye_west.loc[kanye_west['album'] == 'Late Registration', 'album_image_url'].where(
+        kanye_west['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b273428d2255141c2119409a31b2'
+    )
 
 popular_album = kanye_west.groupby(['album', 'album_image_url','year']).agg({
       'popularity':'mean',
@@ -434,42 +480,51 @@ st.write('')
 
 st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KANYE WEST')
 
+popular_album_1= kanye_west.groupby(['album','year']).agg({
+      'popularity':'mean',
+      'track_name':'nunique'
+}).reset_index().sort_values('popularity', ascending=False)
+
 fig = go.Figure()
 
 fig.add_trace(
-      go.Bar(
-        x=popular_album['album'],  # Repetimos el eje x para que la línea siga el mismo formato
-        y= popular_album['popularity'], # Línea horizontal en la popularidad 6
-        marker = dict(
-              color = popular_album['popularity'],
-              colorscale = px.colors.sequential.Blues
-        )  
-    )
-            
-)
-
-fig.add_trace(
-      go.Scatter(
-         x = popular_album['year'].sort_values(),
-         y = popular_album['popularity'],
-         mode = 'markers',
-         marker=dict(
-               size = 10,
-               color = popular_album['popularity'],
-               colorscale = 'Viridis',
-               showscale = False
-         ),
+    go.Scatter(
+        x=popular_album_1['popularity'],  # Años en el eje X
+        y=popular_album_1['year'],  # Popularidad en el eje Y
+        mode='markers+text',  # Mostrar marcadores y texto
+        marker=dict(
+            size=10,
+            color=popular_album_1['popularity'],  # Usar popularidad como base de los colores
+            colorscale='Viridis',
+            showscale=False  # Mostrar la escala de colores
+        ),
+        text=popular_album_1['album'],  # Nombres de álbumes como etiquetas
+        textposition='top center',  # Posición del texto sobre el marcador
         showlegend=False
-
-      )
+    )
 )
+# fig.add_trace(
+#       go.Scatter(
+#          x = popular_album_1['year'].sort_values(),
+#          y = popular_album_1['popularity'],
+#          mode = 'markers',
+#          marker=dict(
+#                size = 10,
+#                color = popular_album_1['popularity'],
+#                colorscale = 'Viridis',
+#                showscale = False
+#          ),
+#         showlegend=False
+
+#       )
+# )
 
   
 st.plotly_chart(fig)
 # kanye_west          
 #·analizaremos el recorrido de la carrera de kanye west, los albumes lanzados por años 
 
-year_album = kanye_west.groupby(['year', 'album_image_url', 'album'])['album'].nunique().reset_index(name = 'count')
+year_album = kanye_west.groupby(['year', 'album', 'album_image_url'])['album'].nunique().reset_index(name = 'count')
 year_album['year'] = year_album['year'] .astype(int)
 
 # Slider para seleccionar un valor entre 0 y 100
@@ -502,7 +557,8 @@ if not year_album_filtered.empty:
             st.markdown(
             f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto;">',
             unsafe_allow_html=True
-        )
+        ) 
+          #   st.header(year_album_sb['album'].values[i])   
             st.write('')
      
      with o2:
@@ -521,6 +577,80 @@ if not year_album_filtered.empty:
 else:
      st.write('No publico albumes este año el patrón.')
 
+
+kanye_west['year'] = kanye_west['year'].astype(int)
+album_per_year_kw = kanye_west[kanye_west['year'] == años]
+
+# Comprobar si hay más de dos álbumes únicos
+if album_per_year_kw['album'].nunique() >= 2:
+      # Seleccionar álbum o álbumes
+     selected_albums = st.multiselect('Selecciona uno o dos álbumes:', album_per_year_kw['album'].unique())
+
+# Botón para filtrar
+     if st.button('Filtrar álbumes'):
+    # Filtrar el DataFrame por los álbumes seleccionados
+          if selected_albums:
+               filtered_df = album_per_year_kw[album_per_year_kw['album'].isin(selected_albums)]
+               
+               fig = go.Figure(
+                     layout=go.Layout(
+                           width=800,
+                           height=800
+
+                     )
+               )
+
+               fig.add_trace(
+                    go.Scatter(
+                         x=filtered_df['popularity'],  # Años en el eje X
+                         y=filtered_df['track_name'],  # Popularidad en el eje Y
+                         mode='markers+text',  # Mostrar marcadores y texto
+                         marker=dict(
+                                   size=10,
+                                   color=filtered_df['popularity'],  # Usar popularidad como base de los colores
+                                        colorscale='Viridis',
+                                             showscale=False  # Mostrar la escala de colores
+                                   )
+                         )
+               )
+
+
+               fig.add_trace(
+                    go.Scatter(
+                         x=filtered_df['popularity'],  # Años en el eje X
+                         y=filtered_df['track_name'],  # Popularidad en el eje Y
+                         mode='markers+text',  # Mostrar marcadores y texto
+                         marker=dict(
+                                   size=10,
+                                   color=filtered_df['popularity'],  # Usar popularidad como base de los colores
+                                   colorscale='Viridis',
+                                   showscale=False  # Mostrar la escala de colores
+                                   )
+                         )
+               )
+
+               st.plotly_chart(fig, key = 'fig2')
+
+else:
+      
+      fig = go.Figure()
+
+      fig.add_trace(
+            go.Scatter(
+                  x = album_per_year_kw['popularity'],
+                  y = album_per_year_kw['track_name'],
+                  mode = 'markers+text',
+                  marker= dict(
+                        size = 10,
+                        color=album_per_year_kw['popularity'],
+                        colorscale = 'Viridis',
+                        showscale =False
+                  )
+            )
+      )
+
+      st.plotly_chart(fig, key = 'fig1')
+
 st.write('')
 st.write('')
 st.write('')
@@ -529,8 +659,21 @@ st.write('')
 st.header('**ANALISIS DEL SEGUNDO ARTISTA CON MAYOR FRECUENCIA EN LA PLAYLIST**')
 st.header('KENDRICK LAMAR')
 
+kd1, kd2 = st.columns(2)
 
-st.subheader('¿Cuales son los albumes mas populares de Kendrick?')
+with kd1:
+      st.subheader('Total de canciones')
+      kdot_songs = kendrick_lamar['track_name'].nunique()
+      st.write(f'**{kdot_songs}**')
+
+with kd2:
+      st.subheader('Total de albumes')
+      kdot_albumes = kendrick_lamar['album'].nunique()
+      st.write(f'**{kdot_albumes}**')
+
+
+
+st.subheader('¿Cuales son los albumes mas populares de Kendrick?y')
 kendrick_lamar = pd.merge(
     kendrick_lamar,
     playlist[['album', 'album_image_url']],
@@ -539,11 +682,37 @@ kendrick_lamar = pd.merge(
     
 )
 
+kendrick_lamar = kendrick_lamar.drop_duplicates()
+
+
+kendrick_lamar.loc[kendrick_lamar['album'] == 'Black Panther The Album Music From And Inspired By', 'album_image_url'] = \
+    kendrick_lamar.loc[kendrick_lamar['album'] == 'Black Panther The Album Music From And Inspired By', 'album_image_url'].where(
+        kendrick_lamar['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b273c027ad28821777b00dcaa888'
+    )
+
+kendrick_lamar.loc[kendrick_lamar['album'] == 'DAMN. COLLECTORS EDITION.', 'album_image_url'] = \
+    kendrick_lamar.loc[kendrick_lamar['album'] == 'DAMN. COLLECTORS EDITION.', 'album_image_url'].where(
+        kendrick_lamar['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b273add9eb25744782c3717c9368'
+    )
+
+kendrick_lamar.loc[kendrick_lamar['album'] == 'untitled unmastered.', 'album_image_url'] = \
+    kendrick_lamar.loc[kendrick_lamar['album'] == 'untitled unmastered.', 'album_image_url'].where(
+        kendrick_lamar['album_image_url'].notna(), 
+        'https://media.pitchfork.com/photos/5929b49e9d034d5c69bf4ec7/1:1/w_450%2Cc_limit/1bcdfd6b.jpg'
+    )
+
+kendrick_lamar.loc[kendrick_lamar['album'] == 'Overly Dedicated', 'album_image_url'] = \
+    kendrick_lamar.loc[kendrick_lamar['album'] == 'Overly Dedicated', 'album_image_url'].where(
+        kendrick_lamar['album_image_url'].notna(), 
+        'https://i.scdn.co/image/ab67616d0000b2739b035b031d9f0a6a75ae464e'
+    )
+
 popular_album_kdot = kendrick_lamar.groupby(['album', 'album_image_url','year']).agg({
       'popularity':'mean',
       'track_name':'nunique'
 }).reset_index().sort_values('popularity', ascending=False)
-
 
 q1, q2, q3 = st.columns(3)
 
@@ -664,41 +833,27 @@ st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KENDRICK LAMAR')
 fig = go.Figure()
 
 fig.add_trace(
-      go.Bar(
-        x=popular_album_kdot['album'],  # Repetimos el eje x para que la línea siga el mismo formato
-        y= popular_album_kdot['popularity'], # Línea horizontal en la popularidad 6
-        marker = dict(
-              color = popular_album_kdot['popularity'],
-              colorscale = px.colors.sequential.Blues
+    go.Scatter(
+        x=popular_album_kdot['popularity'],  # Años en el eje X
+        y=popular_album_kdot['year'],  # Popularidad en el eje Y
+        mode='markers+text',  # Mostrar marcadores y texto
+        marker=dict(
+            size=10,
+            color=popular_album_kdot['popularity'],  # Usar popularidad como base de los colores
+            colorscale='Viridis',
+            showscale=False  # Mostrar la escala de colores
         ),
-        showlegend=False  
-    )
-            
-)
-
-fig.add_trace(
-      go.Scatter(
-         x = popular_album_kdot['year'].sort_values(),
-         y = popular_album_kdot['popularity'],
-         mode = 'markers',
-         marker=dict(
-               size = 10,
-               color = popular_album_kdot['popularity'],
-               colorscale = 'Viridis',
-               showscale = False
-         ),
+        text=popular_album_kdot['album'],  # Nombres de álbumes como etiquetas
+        textposition='top center',  # Posición del texto sobre el marcador
         showlegend=False
-
-      )
+    )
 )
-
-  
 st.plotly_chart(fig)
 # kendrick_lamar          
 #·analizaremos el recorrido de la carrera de kanye west, los albumes lanzados por años 
 
 year_album = kendrick_lamar.groupby(['year', 'album_image_url', 'album'])['album'].nunique().reset_index(name = 'count')
-year_album['year'] = year_album['year'] .astype(int)
+year_album['year'] = year_album['year'].astype(int)
 
 # Slider para seleccionar un valor entre 0 y 100
 años = st.selectbox('Selecciona un año: ', year_album['year'].unique())
@@ -747,6 +902,76 @@ if not year_album_filtered.empty:
                  st.write('')
                  st.write('')
 else:
-     st.write('No publico albumes este año el patrón.')
+     st.write('No publico albumes este año el mejor rapero del siglo.')
+  
+kendrick_lamar['year'] = kendrick_lamar['year'].astype(int)
+album_per_year = kendrick_lamar[kendrick_lamar['year'] == años]
+# Comprobar si hay más de dos álbumes únicos
+if album_per_year['album'].nunique() >= 2:
+      # Seleccionar álbum o álbumes
+     selected_albums = st.multiselect('Selecciona uno o dos álbumes:', album_per_year['album'].unique())
+
+# Botón para filtrar
+     if st.button('Filtrar álbumes'):
+    # Filtrar el DataFrame por los álbumes seleccionados
+          if selected_albums:
+               filtered_df_kdot = album_per_year[album_per_year['album'].isin(selected_albums)]
+               
+               fig = go.Figure(
+                     layout=go.Layout(
+                           width=800,
+                           height=800
+
+                     )
+               )
+
+               fig.add_trace(
+                    go.Scatter(
+                         x=filtered_df_kdot['popularity'],  # Años en el eje X
+                         y=filtered_df_kdot['track_name'],  # Popularidad en el eje Y
+                         mode='markers+text',  # Mostrar marcadores y texto
+                         marker=dict(
+                                   size=10,
+                                   color=filtered_df_kdot['popularity'],  # Usar popularidad como base de los colores
+                                        colorscale='Viridis',
+                                             showscale=False  # Mostrar la escala de colores
+                                   )
+                         )
+               )
 
 
+               fig.add_trace(
+                    go.Scatter(
+                         x=filtered_df_kdot['popularity'],  # Años en el eje X
+                         y=filtered_df_kdot['track_name'],  # Popularidad en el eje Y
+                         mode='markers+text',  # Mostrar marcadores y texto
+                         marker=dict(
+                                   size=10,
+                                   color=filtered_df_kdot['popularity'],  # Usar popularidad como base de los colores
+                                   colorscale='Viridis',
+                                   showscale=False  # Mostrar la escala de colores
+                                   )
+                         )
+               )
+
+               st.plotly_chart(fig, key = 'fig2')
+
+else:
+      
+      fig = go.Figure()
+
+      fig.add_trace(
+            go.Scatter(
+                  x = album_per_year['popularity'],
+                  y = album_per_year['track_name'],
+                  mode = 'markers+text',
+                  marker= dict(
+                        size = 10,
+                        color=album_per_year['popularity'],
+                        colorscale = 'Viridis',
+                        showscale =False
+                  )
+            )
+      )
+
+      st.plotly_chart(fig, key = 'fig4')
