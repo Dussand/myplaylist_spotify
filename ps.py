@@ -198,10 +198,7 @@ if not oldest_album_filtered.empty:
           
 else:
      st.write('No hay resultados para este año')
-
-
-
-
+     
 year_song = playlist.groupby('year')['name'].count().reset_index()
 
 fig = px.bar(
@@ -315,7 +312,7 @@ kanye_west = pd.merge(
     
 )
 
-popular_album = kanye_west.groupby(['album', 'album_image_url']).agg({
+popular_album = kanye_west.groupby(['album', 'album_image_url','year']).agg({
       'popularity':'mean',
       'track_name':'nunique'
 }).reset_index().sort_values('popularity', ascending=False)
@@ -440,14 +437,316 @@ st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KANYE WEST')
 fig = go.Figure()
 
 fig.add_trace(
-      go.Scatter(
+      go.Bar(
         x=popular_album['album'],  # Repetimos el eje x para que la línea siga el mismo formato
-        y= popular_album['popularity'],  # Línea horizontal en la popularidad 60
-
-        name='Línea de Referencia',  # Nombre que aparecerá en la leyenda
-        line=dict(color='red', dash='dash')  # Estilo de la línea
+        y= popular_album['popularity'], # Línea horizontal en la popularidad 6
+        marker = dict(
+              color = popular_album['popularity'],
+              colorscale = px.colors.sequential.Blues
+        )  
     )
             
 )
+
+fig.add_trace(
+      go.Scatter(
+         x = popular_album['year'].sort_values(),
+         y = popular_album['popularity'],
+         mode = 'markers',
+         marker=dict(
+               size = 10,
+               color = popular_album['popularity'],
+               colorscale = 'Viridis',
+               showscale = False
+         ),
+        showlegend=False
+
+      )
+)
+
   
 st.plotly_chart(fig)
+# kanye_west          
+#·analizaremos el recorrido de la carrera de kanye west, los albumes lanzados por años 
+
+year_album = kanye_west.groupby(['year', 'album_image_url', 'album'])['album'].nunique().reset_index(name = 'count')
+year_album['year'] = year_album['year'] .astype(int)
+
+# Slider para seleccionar un valor entre 0 y 100
+años = st.selectbox('Selecciona un año: ', year_album['year'].unique())
+
+#filtramos por año seleccionado
+year_album_filtered = year_album[year_album['year'] == años]
+
+if not year_album_filtered.empty:
+     year_album_sb = year_album_filtered[year_album_filtered['year'] == años]
+     o1, o2 = st.columns(2)
+
+     with o1:
+
+          st.markdown(
+               """
+                    <style>
+                    .img-rounded {
+                         border-radius: 10px;
+                         width: 40%;
+                         max-width: 20px;
+                         height: auto;
+                    }
+                    </style>
+                    """'',
+                    unsafe_allow_html=True
+)
+                    #itermaos sobre los albumes
+          for i in range(len(year_album_sb)):
+            st.markdown(
+            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto;">',
+            unsafe_allow_html=True
+        )
+            st.write('')
+     
+     with o2:
+
+          for i in range(len(year_album_sb)):
+                 st.subheader(f"Nombre del album")
+                 st.write(f'_{year_album_sb.iloc[i]['album']}_')
+                 yezz  = kanye_west[kanye_west['album'] == year_album_sb.iloc[i]['album']]['track_name'].nunique()
+                 st.subheader(f'Cantidad de canciones: ')
+                 st.write(f'_{yezz}_')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+else:
+     st.write('No publico albumes este año el patrón.')
+
+st.write('')
+st.write('')
+st.write('')
+st.write('')
+
+st.header('**ANALISIS DEL SEGUNDO ARTISTA CON MAYOR FRECUENCIA EN LA PLAYLIST**')
+st.header('KENDRICK LAMAR')
+
+
+st.subheader('¿Cuales son los albumes mas populares de Kendrick?')
+kendrick_lamar = pd.merge(
+    kendrick_lamar,
+    playlist[['album', 'album_image_url']],
+    on = 'album',
+    how = 'left'
+    
+)
+
+popular_album_kdot = kendrick_lamar.groupby(['album', 'album_image_url','year']).agg({
+      'popularity':'mean',
+      'track_name':'nunique'
+}).reset_index().sort_values('popularity', ascending=False)
+
+
+q1, q2, q3 = st.columns(3)
+
+with q1:
+
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album_kdot['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+          st.metric(
+               label= 'Album',
+               value= popular_album_kdot.iloc[0]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album_kdot.iloc[0]['track_name']
+               
+          ) 
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album_kdot.iloc[0]['popularity'], 2)
+               
+          )
+
+
+with q2:
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album_kdot['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+
+          st.metric(
+               label= 'Album',
+               value= popular_album_kdot.iloc[1]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album_kdot.iloc[1]['track_name']
+               
+          )
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album_kdot.iloc[1]['popularity'], 2)
+               
+          )
+
+
+with q3:
+          st.markdown(
+               f"""
+               <style>
+               .img.rounded {{
+               border-radius: 15px;
+               width: 100%;
+               max-width: 40px;
+               height: auto;
+               }}
+               </style>
+               <img src = "{popular_album_kdot['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               """,
+               unsafe_allow_html=True
+               
+          )
+
+
+          st.metric(
+               label= 'Album',
+               value= popular_album_kdot.iloc[2]['album']
+               
+          )
+
+          st.metric(
+               label= 'Canciones',
+               value= popular_album_kdot.iloc[2]['track_name']
+               
+          )
+
+          st.metric(
+               label= 'Popularidad de la cancion (limite 100)',
+               value= round(popular_album_kdot.iloc[2]['popularity'], 2)
+               
+          )
+
+st.write('')
+
+st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KENDRICK LAMAR')
+
+fig = go.Figure()
+
+fig.add_trace(
+      go.Bar(
+        x=popular_album_kdot['album'],  # Repetimos el eje x para que la línea siga el mismo formato
+        y= popular_album_kdot['popularity'], # Línea horizontal en la popularidad 6
+        marker = dict(
+              color = popular_album_kdot['popularity'],
+              colorscale = px.colors.sequential.Blues
+        ),
+        showlegend=False  
+    )
+            
+)
+
+fig.add_trace(
+      go.Scatter(
+         x = popular_album_kdot['year'].sort_values(),
+         y = popular_album_kdot['popularity'],
+         mode = 'markers',
+         marker=dict(
+               size = 10,
+               color = popular_album_kdot['popularity'],
+               colorscale = 'Viridis',
+               showscale = False
+         ),
+        showlegend=False
+
+      )
+)
+
+  
+st.plotly_chart(fig)
+# kendrick_lamar          
+#·analizaremos el recorrido de la carrera de kanye west, los albumes lanzados por años 
+
+year_album = kendrick_lamar.groupby(['year', 'album_image_url', 'album'])['album'].nunique().reset_index(name = 'count')
+year_album['year'] = year_album['year'] .astype(int)
+
+# Slider para seleccionar un valor entre 0 y 100
+años = st.selectbox('Selecciona un año: ', year_album['year'].unique())
+
+#filtramos por año seleccionado
+year_album_filtered = year_album[year_album['year'] == años]
+
+if not year_album_filtered.empty:
+     year_album_sb = year_album_filtered[year_album_filtered['year'] == años]
+     o1, o2 = st.columns(2)
+
+     with o1:
+
+          st.markdown(
+               """
+                    <style>
+                    .img-rounded {
+                         border-radius: 10px;
+                         width: 40%;
+                         max-width: 20px;
+                         height: auto;
+                    }
+                    </style>
+                    """'',
+                    unsafe_allow_html=True
+)
+                    #itermaos sobre los albumes
+          for i in range(len(year_album_sb)):
+            st.markdown(
+            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto;">',
+            unsafe_allow_html=True
+        )
+            st.write('')
+     
+     with o2:
+
+          for i in range(len(year_album_sb)):
+                 st.subheader(f"Nombre del album")
+                 st.write(f'_{year_album_sb.iloc[i]['album']}_')
+                 yezz  = kendrick_lamar[kendrick_lamar['album'] == year_album_sb.iloc[i]['album']]['track_name'].nunique()
+                 st.subheader(f'Cantidad de canciones: ')
+                 st.write(f'_{yezz}_')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+                 st.write('')
+else:
+     st.write('No publico albumes este año el patrón.')
+
+
