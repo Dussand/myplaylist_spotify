@@ -9,7 +9,7 @@ st.title("ANALISIS DE MY PLAYLIST")
 
 playlist = pd.read_csv(r'C:\Users\Dussand\Desktop\proyectsDS\Python\Machine Learning\spotify\myplaylist_spotify\data\my_playlist.csv')
 kanye_west = pd.read_csv('data/Kanye West.csv')
-kendrick_lamar = pd.read_csv(r'C:\Users\Dussand\Desktop\proyectsDS\Python\Machine Learning\spotify\myplaylist_spotify\data\Kendrick Lamar.csv')
+kendrick_lamar = pd.read_csv('data/Kendrick Lamar.csv')
 
 playlist = playlist.drop(columns=['Unnamed: 0'])
 kanye_west = kanye_west.drop(columns=['Unnamed: 0'])
