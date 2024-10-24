@@ -63,48 +63,32 @@ with col1:
     unsafe_allow_html=True
  )
 
-#veremos los albumes con mas presencia en mi playlist
-st.header('TOP 5 ALBUMES CON MAYOR PRESENCIA EN LA PLAYLIST')
-st.write('')
-st.write('')
+st.title("TOP 5 ALBUMES CON MAYOR PRESENCIA EN LA PLAYLIST")
 
 top_5_albumes = playlist.groupby(['album', 'album_image_url'])['album'].count().reset_index(name = 'count').sort_values('count', ascending=False)
-# top_5_albumes
-c1, c2, c3= st.columns(3)
 
-with c1:
-    st.markdown(
-    """
-    <style>
-    .img-rounded {
-        border-radius: 10px;
-        width: 40%;
-        max-width: 20px;
-        height: auto;
-    }
-    </style>
-    """'',
-    unsafe_allow_html=True
-)
-    #itermaos sobre los albumes
-    for i in range(5):
-        st.markdown(
-            f'<img src="{top_5_albumes.iloc[i, 1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 70%; max-width: 85px; height: auto;">',
-            unsafe_allow_html=True
-        )
-        st.write('')
-with c2:
-     for i in range(5):
-         album_frecuency = top_5_albumes.iloc[i]['album']
-         st.metric(label = 'Album Name', value = album_frecuency )
-         st.write('')
-with c3:
-    for i in range (5):
-        count_album = top_5_albumes.iloc[i]['count']
-        st.metric(label = 'Songs amount', value = count_album)
-        st.write('')
+for i in range(5):
+    # Crear columnas para el layout
+    col1, col2, col3, col4 = st.columns([1, 3, 2, 1])
+    
+    # Mostrar el ranking
+    with col1:
+        st.write(f"**#{i+1}**")
 
-st.header('ALBUM CON MAS POPULARIDAD Y CANCION CON MAS POPULARIDAD')
+    # Mostrar la imagen del álbum (puedes ajustar el src)
+    with col2:
+        st.image(top_5_albumes['album_image_url'].iloc[i], width=60)
+     
+         # Mostrar el nombre del álbum
+    with col3:
+        st.write(f"**{top_5_albumes['album'].iloc[i]}**")
+    
+    # Mostrar la cantidad de canciones
+    with col4:
+        st.write(f"**{top_5_albumes['count'].iloc[i]}** canciones")
+     
+
+st.title('ALBUM CON MAS POPULARIDAD Y CANCION CON MAS POPULARIDAD')
 st.write('Analizaremos que album tiene mas popularidad en la plataforma, asimismo con la cancion')
 
 album_popularity = playlist.groupby(['album', 'album_image_url'])['popularity'].mean().sort_values(ascending = False).reset_index()
@@ -113,23 +97,10 @@ album_popularity = playlist.groupby(['album', 'album_image_url'])['popularity'].
 colu1, colu2 = st.columns(2)
 
 with colu1:
-    st.markdown(
-    """
-    <style>
-    .img-rounded {
-        border-radius: 10px;
-        width: 50%;
-        max-width: 40px;
-        height: auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
     #itermaos sobre los albumes
     for i in range(1):
         st.markdown(
-        f'<img src="{album_popularity.iloc[i, 1]}"  alt="Imagen Redondeada" style="border-radius: 10px; width: 100%; max-width: 400px; height: auto;">',
+        f'<img src="{album_popularity.iloc[i, 1]}"  alt="Imagen Redondeada" style="border-radius: 10px; width: 100%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">',
             unsafe_allow_html=True
         )
 
@@ -145,15 +116,14 @@ with colu2:
 st.write('')
 st.write('')
 st.write('')
-st.header('CANCIONES POR AÑO DE LANZAMIENTO DEL ALBUM')
+st.title('CANCIONES POR AÑO DE LANZAMIENTO DEL ALBUM')
 
 oldest_album = playlist.groupby(['album', 'name', 'album_image_url'])['release_date'].min().reset_index()
 oldest_album['year'] = oldest_album['release_date'].str.slice(0,4)
-# oldest_album
+
 # Manejar errores durante la conversión
 oldest_album['year'] = pd.to_numeric(oldest_album['year'], errors='coerce').astype('Int64')
 oldest_album['year'] = oldest_album['year'].astype(int)
-# oldest_album
 
 
 # Slider para seleccionar un valor entre 0 y 100
@@ -172,21 +142,12 @@ if not oldest_album_filtered.empty:
      oa_sb = oldest_album_filtered[oldest_album_filtered['year'] == valor]['album'].unique()
      select_album = st.selectbox(f'ALBUMES DEL AÑO {valor} DE LA LISTA', oa_sb)
      name_df = oldest_album_filtered[oldest_album_filtered['album'] == select_album]
-
      a1, a2 = st.columns(2)
 
      with a1:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{name_df['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               <img src = "{name_df['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -212,7 +173,7 @@ fig = px.bar(
 
 st.plotly_chart(fig)
 
-st.header('ARTISTAS CON MAS PRESENCIA EN LA PLAYLIST')
+st.title('ARTISTAS CON MAS PRESENCIA EN LA PLAYLIST')
 st.write('Veremos los artistas con mayor presencia en la playlist')
 
 artist_frequemcy = playlist.groupby(['artist', 'artist_image_url'])['name'].count().reset_index(name = 'count').sort_values(by = 'count',ascending=False)
@@ -224,15 +185,7 @@ with aa1:
 
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{artist_frequemcy['artist_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               <img src = "{artist_frequemcy['artist_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -264,15 +217,7 @@ with aa1:
 with aa2:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{artist_frequemcy['artist_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               <img src = "{artist_frequemcy['artist_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -302,7 +247,7 @@ with aa2:
           
           st.plotly_chart(fig)
     
-st.header('ANALIZAREMOS UN POCO MAS A LOS DOS ARTISTAS CON MAYOR PRESENCIA EN LA PLAYLIST')
+st.title('ANALIZAREMOS UN POCO MAS A LOS DOS ARTISTAS CON MAYOR PRESENCIA EN LA PLAYLIST')
 
 l1, l2 = st.columns(2)
 
@@ -370,15 +315,7 @@ with q1:
 
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               <img src = "{popular_album['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -406,15 +343,8 @@ with q1:
 with q2:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+
+               <img src = "{popular_album['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -443,15 +373,8 @@ with q2:
 with q3:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+
+               <img src = "{popular_album['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -478,7 +401,7 @@ with q3:
 
 st.write('')
 
-st.title('LINEA DE POPULARIDAD DE LOS ALBUMES DE KANYE WEST')
+st.header('LINEA DE POPULARIDAD DE LOS ALBUMES DE KANYE WEST')
 
 popular_album_1= kanye_west.groupby(['album','year']).agg({
       'popularity':'mean',
@@ -489,8 +412,8 @@ fig = go.Figure()
 
 fig.add_trace(
     go.Scatter(
-        x=popular_album_1['popularity'],  # Años en el eje X
-        y=popular_album_1['year'],  # Popularidad en el eje Y
+        y=popular_album_1['popularity'],  # Años en el eje X
+        x=popular_album_1['year'],  # Popularidad en el eje Y
         mode='markers+text',  # Mostrar marcadores y texto
         marker=dict(
             size=10,
@@ -538,24 +461,10 @@ if not year_album_filtered.empty:
      o1, o2 = st.columns(2)
 
      with o1:
-
-          st.markdown(
-               """
-                    <style>
-                    .img-rounded {
-                         border-radius: 10px;
-                         width: 40%;
-                         max-width: 20px;
-                         height: auto;
-                    }
-                    </style>
-                    """'',
-                    unsafe_allow_html=True
-)
-                    #itermaos sobre los albumes
+          #itermaos sobre los albumes
           for i in range(len(year_album_sb)):
             st.markdown(
-            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto;">',
+            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">',
             unsafe_allow_html=True
         ) 
           #   st.header(year_album_sb['album'].values[i])   
@@ -602,8 +511,8 @@ if album_per_year_kw['album'].nunique() >= 2:
 
                fig.add_trace(
                     go.Scatter(
-                         x=filtered_df['popularity'],  # Años en el eje X
-                         y=filtered_df['track_name'],  # Popularidad en el eje Y
+                         y=filtered_df['popularity'],  # Años en el eje X
+                         x=filtered_df['track_name'],  # Popularidad en el eje Y
                          mode='markers+text',  # Mostrar marcadores y texto
                          marker=dict(
                                    size=10,
@@ -617,8 +526,8 @@ if album_per_year_kw['album'].nunique() >= 2:
 
                fig.add_trace(
                     go.Scatter(
-                         x=filtered_df['popularity'],  # Años en el eje X
-                         y=filtered_df['track_name'],  # Popularidad en el eje Y
+                         y=filtered_df['popularity'],  # Años en el eje X
+                         x=filtered_df['track_name'],  # Popularidad en el eje Y
                          mode='markers+text',  # Mostrar marcadores y texto
                          marker=dict(
                                    size=10,
@@ -642,8 +551,8 @@ else:
 
       fig.add_trace(
             go.Scatter(
-                  x = album_per_year_kw['popularity'],
-                  y = album_per_year_kw['track_name'],
+                  y = album_per_year_kw['popularity'],
+                  x = album_per_year_kw['track_name'],
                   mode = 'markers+text',
                   marker= dict(
                         size = 10,
@@ -725,15 +634,7 @@ with q1:
 
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album_kdot['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+               <img src = "{popular_album_kdot['album_image_url'].values[0]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -761,15 +662,8 @@ with q1:
 with q2:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album_kdot['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+
+               <img src = "{popular_album_kdot['album_image_url'].values[1]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -798,15 +692,8 @@ with q2:
 with q3:
           st.markdown(
                f"""
-               <style>
-               .img.rounded {{
-               border-radius: 15px;
-               width: 100%;
-               max-width: 40px;
-               height: auto;
-               }}
-               </style>
-               <img src = "{popular_album_kdot['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto;">',
+
+               <img src = "{popular_album_kdot['album_image_url'].values[2]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 400px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">
                """,
                unsafe_allow_html=True
                
@@ -839,8 +726,8 @@ fig = go.Figure()
 
 fig.add_trace(
     go.Scatter(
-        x=popular_album_kdot['popularity'],  # Años en el eje X
-        y=popular_album_kdot['year'],  # Popularidad en el eje Y
+        x=popular_album_kdot['year'],  # Años en el eje X
+        y=popular_album_kdot['popularity'],  # Popularidad en el eje Y
         mode='markers+text',  # Mostrar marcadores y texto
         marker=dict(
             size=10,
@@ -872,23 +759,10 @@ if not year_album_filtered.empty:
 
      with o1:
 
-          st.markdown(
-               """
-                    <style>
-                    .img-rounded {
-                         border-radius: 10px;
-                         width: 40%;
-                         max-width: 20px;
-                         height: auto;
-                    }
-                    </style>
-                    """'',
-                    unsafe_allow_html=True
-)
-                    #itermaos sobre los albumes
+          #itermaos sobre los albumes
           for i in range(len(year_album_sb)):
             st.markdown(
-            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto;">',
+            f'<img src="{year_album_sb['album_image_url'].values[i]}" alt="Imagen Redondeada" style="border-radius: 10px; width: 90%; max-width: 250px; height: auto; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.5); /* sombra */">',
             unsafe_allow_html=True
         )
             st.write('')
@@ -932,8 +806,8 @@ if album_per_year['album'].nunique() >= 2:
 
                fig.add_trace(
                     go.Scatter(
-                         x=filtered_df_kdot['popularity'],  # Años en el eje X
-                         y=filtered_df_kdot['track_name'],  # Popularidad en el eje Y
+                         x=filtered_df_kdot['track_name'],  # Años en el eje X
+                         y=filtered_df_kdot['popularity'],  # Popularidad en el eje Y
                          mode='markers+text',  # Mostrar marcadores y texto
                          marker=dict(
                                    size=10,
@@ -947,8 +821,8 @@ if album_per_year['album'].nunique() >= 2:
 
                fig.add_trace(
                     go.Scatter(
-                         x=filtered_df_kdot['popularity'],  # Años en el eje X
-                         y=filtered_df_kdot['track_name'],  # Popularidad en el eje Y
+                         x=filtered_df_kdot['track_name'],  # Años en el eje X
+                         y=filtered_df_kdot['popularity'],  # Popularidad en el eje Y
                          mode='markers+text',  # Mostrar marcadores y texto
                          marker=dict(
                                    size=10,
@@ -972,8 +846,8 @@ else:
 
       fig.add_trace(
             go.Scatter(
-                  x = album_per_year['popularity'],
-                  y = album_per_year['track_name'],
+                  x = album_per_year['track_name'],
+                  y = album_per_year['popularity'],
                   mode = 'markers+text',
                   marker= dict(
                         size = 10,
@@ -985,3 +859,6 @@ else:
       )
 
       st.plotly_chart(fig, key = 'fig4')
+
+
+
