@@ -36,7 +36,7 @@ with k2:
 
     )
 # Título en la barra lateral
-st.sidebar.title("Elige tu cancion para escuchar")
+st.sidebar.title("Elige tu cancion para escuchar") #para otra cosas
 
 # Título de la aplicación
 
