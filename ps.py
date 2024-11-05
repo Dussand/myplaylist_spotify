@@ -93,9 +93,6 @@ playlist['genre_count'] = playlist['genres'].apply(lambda x: len(x.split(', ')))
 # Unir el DataFrame original con el DataFrame de géneros separados
 playlist = pd.concat([playlist, genres_split], axis=1)
 
-
-st.title("ANALISIS DE MY PLAYLIST")
-
 kanye_west = pd.read_csv('data/Kanye West.csv')
 kendrick_lamar = pd.read_csv('data/Kendrick Lamar.csv')
 
@@ -107,11 +104,12 @@ kanye_west['year'] = kanye_west['release_date'].str.slice(0,4)
 kendrick_lamar['year'] = kendrick_lamar['release_date'].str.slice(0,4)
 
 # Título en la barra lateral
-st.sidebar.title("Elige tu cancion para escuchar") #para otra 
+
+st.sidebar.title("ANALISIS DE MY PLAYLIST") #para otra 
+st.sidebar.subheader('Selecciona una cancion')
 pagina = st.sidebar.selectbox('Selecciona una pagina', ('Analisis de canciones de playlist', 'Artistas mas frecuentes'))
 
 # Título de la aplicación
-
 artist = playlist['artist'].unique()
 artist_sb = st.sidebar.selectbox('Selecciona uno de los albumes de tu playlist', artist)
 song_sb = st.sidebar.selectbox('Selecciona una cancion: ', playlist[playlist['artist']== artist_sb]['name'].unique())
@@ -155,26 +153,26 @@ if pagina == 'Analisis de canciones de playlist':
      st.title("TOP 5 ALBUMES CON MAYOR PRESENCIA EN LA PLAYLIST")
 
      top_5_albumes = playlist.groupby(['album', 'album_image_url'])['album'].count().reset_index(name = 'count').sort_values('count', ascending=False)
-
+     
      for i in range(5):
           # Crear columnas para el layout
           col1, col2, col3, col4 = st.columns([1, 3, 2, 1])
           
-     # Mostrar el ranking
-     with col1:
-          st.write(f"**#{i+1}**")
+          # Mostrar el ranking
+          with col1:
+               st.write(f"**#{i+1}**")
 
-     # Mostrar la imagen del álbum (puedes ajustar el src)
-     with col2:
-          st.image(top_5_albumes['album_image_url'].iloc[i], width=60)
+          # Mostrar la imagen del álbum (puedes ajustar el src)
+          with col2:
+               st.image(top_5_albumes['album_image_url'].iloc[i], width=60)
+               
+               # Mostrar el nombre del álbum
+          with col3:
+               st.write(f"**{top_5_albumes['album'].iloc[i]}**")
           
-          # Mostrar el nombre del álbum
-     with col3:
-          st.write(f"**{top_5_albumes['album'].iloc[i]}**")
-     
-     # Mostrar la cantidad de canciones
-     with col4:
-          st.write(f"**{top_5_albumes['count'].iloc[i]}** canciones")
+          # Mostrar la cantidad de canciones
+          with col4:
+               st.write(f"**{top_5_albumes['count'].iloc[i]}** canciones")
           
 
      st.title('ALBUM CON MAS POPULARIDAD Y CANCION CON MAS POPULARIDAD')
@@ -338,7 +336,21 @@ if pagina == 'Analisis de canciones de playlist':
 
 
 if pagina == 'Artistas mas frecuentes':
-     
+
+     col1, col2 = st.sidebar.columns(2)
+
+     with col1:
+          st.sidebar.markdown(
+          f"""
+          <iframe src="{spotify_embed_url}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+          """,
+          unsafe_allow_html=True
+          )
+          
+
+     k1, k2 = st.columns(2)     
+
+
      st.title('ANALIZAREMOS UN POCO MAS A LOS DOS ARTISTAS CON MAYOR PRESENCIA EN LA PLAYLIST')
 
      l1, l2 = st.columns(2)
